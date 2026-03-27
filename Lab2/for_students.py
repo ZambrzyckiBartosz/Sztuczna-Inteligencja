@@ -2,17 +2,21 @@ from itertools import compress
 import random
 import time
 import matplotlib.pyplot as plt
+from numpy.random.mtrand import randint
 
 from data import *
 
+
 def initial_population(individual_size, population_size):
     return [[random.choice([True, False]) for _ in range(individual_size)] for _ in range(population_size)]
+
 
 def fitness(items, knapsack_max_capacity, individual):
     total_weight = sum(compress(items['Weight'], individual))
     if total_weight > knapsack_max_capacity:
         return 0
     return sum(compress(items['Value'], individual))
+
 
 def population_best(items, knapsack_max_capacity, population):
     best_individual = None
@@ -31,7 +35,7 @@ print(items)
 population_size = 100
 generations = 200
 n_selection = 20
-n_elite = 1
+n_elite = 4
 
 start_time = time.time()
 best_solution = None
@@ -42,7 +46,29 @@ population = initial_population(len(items), population_size)
 for _ in range(generations):
     population_history.append(population)
 
-    # TODO: implement genetic algorithm
+    total = sum(fitness(items, knapsack_max_capacity, individual) for individual in population)
+    prob = [fitness(items, knapsack_max_capacity, individual) / total for individual in population]
+    selected = random.choices(range(population_size), weights=prob, k=n_selection)
+
+
+    children = []
+    for _ in range(population_size - n_elite):
+        cross = random.randint(0, len(items))
+        children.append((population[random.choice(selected)])[:cross] + (population[random.choice(selected)])[cross:])
+
+
+    for i in range(len(children)):
+        for j in range(len(children[i])):
+            if random.random() < 0.025:
+                children[i][j] = not children[i][j]
+                continue
+
+
+
+    elite_population = sorted(population, key=lambda individual: fitness(items, knapsack_max_capacity, individual),reverse=True)[:n_elite]
+    children.extend(elite_population)
+    population = children
+
 
     best_individual, best_individual_fitness = population_best(items, knapsack_max_capacity, population)
     if best_individual_fitness > best_fitness:
@@ -71,3 +97,4 @@ plt.plot(best_history, 'r')
 plt.xlabel('Generation')
 plt.ylabel('Fitness')
 plt.show()
+
