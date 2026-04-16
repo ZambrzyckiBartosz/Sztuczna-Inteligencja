@@ -82,7 +82,26 @@ class Connect4:
 
         self.who_moves = 'o' if self.who_moves == 'x' else 'x'
 
-    def evaluate(self, my_token):
+
+    def simple(self,my_token):
+        opp_token = 'o' if my_token == 'x' else 'x'
+        score = 0.0
+
+        center = self.center_column()
+
+        for four in self.iter_fours():
+            my_count = four.count(my_token)
+            opp_count = four.count(opp_token)
+            empty_count = four.count('_')
+
+            if my_count == 3 and empty_count == 1:
+                score += 0.5
+
+            if opp_count == 3 and empty_count == 1:
+                score -= 0.6
+
+        return max(-0.99, min(0.99, score))
+    def advanced(self, my_token):
         opp_token = 'o' if my_token == 'x' else 'x'
         score = 0.0
 
